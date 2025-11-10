@@ -1,0 +1,5 @@
+python-dotenv
+agent-framework[azure-ai]
+azure-identity
+pydantic
+pandas
