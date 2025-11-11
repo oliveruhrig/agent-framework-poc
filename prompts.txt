@@ -2,7 +2,7 @@ I want to build a conversational AI agent using "microsoft agent framework" and 
 
 The data includes which developers have used github copilot each month, along with number of requests and which models are being used. 
 
-There are multiple CSV files. For example, there's a CSV file that shows which developers have used github copilot each month, and identifies the division of each developer. Another CSV shows the number of requests and lines of code suggested and accepted for each request or chat made.
+There are multiple CSV files. For example, there's a CSV file that shows which developers have used github copilot each month, and identifies the segment of each developer. Another CSV shows the number of requests and lines of code suggested and accepted for each request or chat made.
 
 Show the architecture for a solution I can implement using the microsoft agent framework. Should I also create an MCP server as part of the solution?
 

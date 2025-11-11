@@ -3,3 +3,7 @@ agent-framework[azure-ai]
 azure-identity
 pydantic
 pandas
+fastapi
+uvicorn
+httpx
+pyyaml

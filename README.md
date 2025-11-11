@@ -7,9 +7,11 @@ REST / Audit APIs, aggregates the data with `pandas`, and exposes analytics thro
 
 ## Repository Layout
 
-- `agents/copilot_usage_agent.py` – entry point that spins up the conversational agent
-- `services/copilot_usage.py` – analytics layer handling CSV ingestion and metric calculations
-- `agents/azure_ai_basic.py` – original quick-start sample (still available for reference)
+- `agents/orchestrator.py` – Microsoft Agent Framework orchestrator that calls the MCP tools
+- `mcp/copilot_usage_server.py` – MCP server exposing segment-level adoption analytics
+- `services/segment_adoption.py` & `services/segment_adoption_loader.py` – analytics layer and loader for the FTE vs contractor dataset
+- `services/metrics_registry.py` & `config/metrics.yaml` – governance catalogue for key metrics
+- `agents/azure_ai_basic.py` – original quick-start sample for reference
 
 ## Prerequisites
 
@@ -17,7 +19,7 @@ REST / Audit APIs, aggregates the data with `pandas`, and exposes analytics thro
 - Azure CLI logged in with access to your Azure AI project (`az login`)
 - An Azure AI Agent deployment configured for `AZURE_AI_PROJECT_ENDPOINT` and
 	`AZURE_AI_MODEL_DEPLOYMENT_NAME`
-- Exported CSV data files containing Copilot usage telemetry (see the schemas below)
+- Exported CSV data file containing Copilot segment-level adoption telemetry (see the schema below)
 
 Install dependencies:
 
@@ -34,54 +36,55 @@ export AZURE_AI_PROJECT_ENDPOINT="https://<your-project>.openai.azure.com/"
 export AZURE_AI_MODEL_DEPLOYMENT_NAME="<deployment-name>"
 
 # Optional overrides – defaults use ./data/*.csv
-export COPILOT_USAGE_CSV="/path/to/developer_monthly_usage.csv"
-export COPILOT_INTERACTIONS_CSV="/path/to/copilot_interactions.csv"
+export COPILOT_SEGMENT_ADOPTION_CSV="/path/to/segment_adoption.csv"
 ```
 
 ## Expected CSV Schemas
 
-**`developer_monthly_usage.csv`**
+**`segment_adoption.csv`** (aggregated FTE vs contractor telemetry)
 
-| column         | description                                         |
-| -------------- | --------------------------------------------------- |
-| `developer_id` | Unique identifier of the developer                  |
-| `division`     | Business division / organisational unit              |
-| `month`        | Reporting month in `YYYY-MM` format                  |
+| column                    | description                                                      |
+| ------------------------- | ---------------------------------------------------------------- |
+| `Month`                   | Reporting month in `YYYY-MM` format                              |
+| `Segment`                 | Business segment / organisational unit                           |
+| `Active_users_FTE`        | Count of active full-time employee users                         |
+| `Active_users_nonFTE`     | Count of active contractor users                                 |
+| `total_seats_FTE`         | Number of FTE seats available                                    |
+| `total_seats_nonFTE`      | Number of contractor seats available                             |
+| `billing_adoption_FTE`    | Percentage of FTE seats covered by the billing programme         |
+| `billing_adoption_nonFTE` | Percentage of contractor seats covered by the billing programme  |
 
-**`copilot_interactions.csv`**
+Whitespace, commas, and percentage signs are normalised automatically. Use `COPILOT_SEGMENT_ADOPTION_CSV`
+to point at the exported file under `data/copilot/segment_adoption.csv`.
 
-| column              | description                                                         |
-| ------------------- | ------------------------------------------------------------------- |
-| `developer_id`      | Developer identifier                                                |
-| `timestamp` or `month` | Either a precise timestamp or a `YYYY-MM` month                  |
-| `division` (optional) | Division; joined from the usage CSV if missing                    |
-| `model` (optional)  | Copilot model identifier (e.g., `gpt-4o`, `gpt-35-turbo`)           |
-| `requests` / `request_count` (optional) | Number of requests represented by each row    |
-| `lines_suggested`, `lines_accepted` (optional) | Suggestion acceptance metrics            |
+## Running the Solution
 
-Additional columns are ignored. When request counts are absent the analytics fall back to row
-counts. Missing division labels are merged from the monthly usage CSV.
-
-## Running the Agent
+Start the MCP server (requires `az login` and access to the CSV files):
 
 ```bash
-python agents/copilot_usage_agent.py
+python -m mcp.copilot_usage_server
+```
+
+In a separate terminal, launch the orchestrator agent (the `--pre` flag is required when installing
+`agent-framework`):
+
+```bash
+python agents/orchestrator.py
 ```
 
 You will enter an interactive prompt. Example questions:
 
-- `What is the Copilot adoption rate in the Platform division for 2025-01 to 2025-06?`
-- `Show the organisation-wide adoption trend for the last 6 months.`
-- `Which models are used most in the Applications division?`
-- `List available divisions`
+- `Summarise FTE vs contractor adoption for Asia in 2025.`
+- `Compare FTE versus contractor adoption in Asia for 2025.`
+- `Describe the metrics captured by fte_utilisation and contractor_billing_adoption.`
 
-Type `exit` when you are done.
+Type `exit` when you are done. Responses are grounded in MCP tool outputs; if the governance guard
+detects an unsafe request it will refuse the prompt before the agent calls the tools.
 
 ## Extending the Solution
 
-- Add new CSV sources or database connectors inside `CopilotUsageAnalytics`
-- Promote the analytics layer into a reusable MCP server if other agents or Copilot Chat
-	experiences should call the same tools
+- Extend segment adoption ingestion or derived metrics inside `services/segment_adoption.py`
+- Scale the MCP server with authentication, caching, and additional tools (e.g., chart specs)
 - Introduce persistent conversation storage (Cosmos DB / Redis) to share context across sessions
 - Connect Azure AI Search or a semantic cache for narrative summaries and glossary lookups
 
