@@ -104,10 +104,7 @@ def segment_adoption_summary_tool(
 
 def segment_adoption_trend_tool(
     segment: Annotated[Optional[str], Field(description="Optional segment filter.")] = None,
-    metric: Annotated[
-        str,
-        Field(description="fte_adoption | non_fte_adoption | fte_active | non_fte_active"),
-    ] = "fte_adoption",
+    metric: Annotated[str, Field(description="fte_adoption | non_fte_adoption | fte_active | non_fte_active")] = "fte_adoption",
     start_month: Annotated[Optional[str], Field(description="Start month (YYYY-MM).")] = None,
     end_month: Annotated[Optional[str], Field(description="End month (YYYY-MM).")] = None,
     limit: Annotated[int, Field(description="Number of points to include.")] = 6,
@@ -124,10 +121,7 @@ def segment_adoption_trend_tool(
 
 def segment_adoption_leaders_tool(
     month: Annotated[Optional[str], Field(description="Optional month (YYYY-MM).")] = None,
-    metric: Annotated[
-        str,
-        Field(description="fte_adoption | non_fte_adoption | fte_active | non_fte_active"),
-    ] = "fte_adoption",
+    metric: Annotated[str, Field(description="fte_adoption | non_fte_adoption | fte_active | non_fte_active")] = "fte_adoption",
     limit: Annotated[int, Field(description="Number of segments to list.")] = 5,
 ) -> str:
     return _call_bridge(
