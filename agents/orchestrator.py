@@ -2,12 +2,31 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import Annotated, Optional
+from typing import Annotated, Optional, List
 
 import httpx
 from agent_framework.azure import AzureAIAgentClient
 from azure.identity.aio import AzureCliCredential
 from pydantic import Field
+
+from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+def ensure_env_loaded() -> None:
+    here = Path(__file__).resolve().parent
+    for folder in [here, *here.parents]:
+        env_path = folder / ".env"
+        if env_path.exists():
+            load_dotenv(env_path)
+            break
+    else:
+        raise RuntimeError("Could not locate a .env file for agent initialization.")
+    if "AZURE_AI_PROJECT_ENDPOINT" not in os.environ:
+        raise RuntimeError("AZURE_AI_PROJECT_ENDPOINT is missing after loading .env.")
+
+ensure_env_loaded()
+
 
 _GUARDRAIL_KEYWORDS = {
     "individual": "Please avoid querying individual developers.",
@@ -65,7 +84,7 @@ def list_segments_tool() -> str:
 
 
 def describe_metrics_tool(
-    metric_ids: Annotated[Optional[list[str]], Field(description="Specific metric identifiers.")] = None,
+    metric_ids: Annotated[Optional[List[str]], Field(description="Specific metric identifiers.")] = None,
 ) -> str:
     return _call_bridge("describe_metrics", metric_ids=metric_ids)
 
