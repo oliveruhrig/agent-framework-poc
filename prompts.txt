@@ -1,4 +1,5 @@
-Build the app:
+Build
+=====
 I want to build a conversational AI agent using "microsoft agent framework" and python. The agent will be used by management within my company to ask about GitHub copilot usage of the company's 6000 developers. The agent should analyse historic github copilot data I've obtained from github APIs and saved to CSV files. 
 
 The data includes which developers have used github copilot each month, along with number of requests and which models are being used. 
@@ -7,8 +8,24 @@ There are multiple CSV files. For example, there's a CSV file that shows which d
 
 Show the architecture for a solution I can implement using the microsoft agent framework. Should I also create an MCP server as part of the solution?
 
-sample usage:
+2025-11-14:
+Add support for an additional data-source, #file:premium_requests_db.csv . Note that this solution will access this data from a database at some point in the future. For now augment the solution to reference this CSV data. 
+This new CSV contains a log of how many (GitHub Copilot) Premium Requests were made by engineers in the company across both GitHub enterprises.
+Our two GitHub enterprises are named:
+"manulife": this is our go-forward enterprise, also known as the EMU (enterprise managed users) enterprise. 
+"manulife-financial": this is our legacy enterprise.
 
+The premium request rows contain column "mfcgd_id" - this is the Entra ID username of the engineer. An engineer can below to both enterprises, and will have a different github username (column gh_id) in each enterprise. When providing analysis per engineer, consider data from both enterprises, joined by their Entra ID.
+
+Column "gross_amount" is the cost not including the 300 free requests per github account per month. The discount_amount considers the free requests available, and "net_amount" is what Manulife will be charged for Premium Request above the free allocation. 
+
+Joining data across data sources, for analysis:
+Note that the "segment" column is the same as the segment column in #file:segment_adoption.csv , and so this data can be correlated. 
+Likewise, column "is_employee" denotes whether the engineer is an employee (FTE) or contractor (non-FTE). This can also be correlated with the segment_adoption data.
+
+
+RUNTIME
+=======
 2025-11-13:
 data: only adoption data
 Management: how has adoption of the gwam segment changed over time?

@@ -130,6 +130,94 @@ def segment_adoption_leaders_tool(
     )
 
 
+def premium_requests_summary_tool(
+    segment: Annotated[Optional[str], Field(description="Optional segment filter.")] = None,
+    user_type: Annotated[str, Field(description="fte | contractor | all")] = "all",
+    start_month: Annotated[Optional[str], Field(description="Start month (YYYY-MM).")] = None,
+    end_month: Annotated[Optional[str], Field(description="End month (YYYY-MM).")] = None,
+) -> str:
+    """Summarise premium request usage, costs, and user counts across both GitHub enterprises."""
+    return _call_bridge(
+        "premium_requests_summary",
+        segment=segment,
+        user_type=user_type,
+        start_month=start_month,
+        end_month=end_month,
+    )
+
+
+def premium_requests_trend_tool(
+    segment: Annotated[Optional[str], Field(description="Optional segment filter.")] = None,
+    user_type: Annotated[str, Field(description="fte | contractor | all")] = "all",
+    metric: Annotated[str, Field(description="requests | cost | users")] = "requests",
+    start_month: Annotated[Optional[str], Field(description="Start month (YYYY-MM).")] = None,
+    end_month: Annotated[Optional[str], Field(description="End month (YYYY-MM).")] = None,
+    limit: Annotated[int, Field(description="Number of months to include.")] = 6,
+) -> str:
+    """Show month-by-month trend of premium requests, cost, or unique users."""
+    return _call_bridge(
+        "premium_requests_trend",
+        segment=segment,
+        user_type=user_type,
+        metric=metric,
+        start_month=start_month,
+        end_month=end_month,
+        limit=limit,
+    )
+
+
+def premium_requests_top_segments_tool(
+    user_type: Annotated[str, Field(description="fte | contractor | all")] = "all",
+    metric: Annotated[str, Field(description="requests | cost | users")] = "cost",
+    start_month: Annotated[Optional[str], Field(description="Start month (YYYY-MM).")] = None,
+    end_month: Annotated[Optional[str], Field(description="End month (YYYY-MM).")] = None,
+    limit: Annotated[int, Field(description="Top N segments.")] = 5,
+) -> str:
+    """Rank segments by premium request volume, cost, or user count."""
+    return _call_bridge(
+        "premium_requests_top_segments",
+        user_type=user_type,
+        metric=metric,
+        start_month=start_month,
+        end_month=end_month,
+        limit=limit,
+    )
+
+
+def premium_requests_top_models_tool(
+    segment: Annotated[Optional[str], Field(description="Optional segment filter.")] = None,
+    user_type: Annotated[str, Field(description="fte | contractor | all")] = "all",
+    start_month: Annotated[Optional[str], Field(description="Start month (YYYY-MM).")] = None,
+    end_month: Annotated[Optional[str], Field(description="End month (YYYY-MM).")] = None,
+    limit: Annotated[int, Field(description="Top N models.")] = 5,
+) -> str:
+    """Rank AI models by premium request volume and cost."""
+    return _call_bridge(
+        "premium_requests_top_models",
+        segment=segment,
+        user_type=user_type,
+        start_month=start_month,
+        end_month=end_month,
+        limit=limit,
+    )
+
+
+def premium_requests_enterprise_breakdown_tool(
+    segment: Annotated[Optional[str], Field(description="Optional segment filter.")] = None,
+    user_type: Annotated[str, Field(description="fte | contractor | all")] = "all",
+    start_month: Annotated[Optional[str], Field(description="Start month (YYYY-MM).")] = None,
+    end_month: Annotated[Optional[str], Field(description="End month (YYYY-MM).")] = None,
+) -> str:
+    """Compare usage between manulife (EMU) and manulife-financial (legacy) enterprises."""
+    return _call_bridge(
+        "premium_requests_enterprise_breakdown",
+        segment=segment,
+        user_type=user_type,
+        start_month=start_month,
+        end_month=end_month,
+    )
+
+
 async def run_console_agent(mcp_url: str = "http://127.0.0.1:8000") -> None:
     global _BRIDGE
     _BRIDGE = McpBridge(base_url=mcp_url)
@@ -157,7 +245,9 @@ async def run_console_agent(mcp_url: str = "http://127.0.0.1:8000") -> None:
             analytics_instructions = (
                 "You are the Copilot Usage Analytics agent. Use the registered MCP tools to ground all"
                 " answers. Summaries must reference quantitative metrics, compare FTE and contractor"
-                " adoption when relevant, and state when data is missing."
+                " adoption when relevant, and state when data is missing. For premium request queries,"
+                " note that engineers may have accounts in both manulife (EMU) and manulife-financial"
+                " (legacy) enterprises, joined by their Entra ID (mfcgd_id)."
             )
             tools = [
                 list_segments_tool,
@@ -165,6 +255,11 @@ async def run_console_agent(mcp_url: str = "http://127.0.0.1:8000") -> None:
                 segment_adoption_trend_tool,
                 segment_adoption_leaders_tool,
                 describe_metrics_tool,
+                premium_requests_summary_tool,
+                premium_requests_trend_tool,
+                premium_requests_top_segments_tool,
+                premium_requests_top_models_tool,
+                premium_requests_enterprise_breakdown_tool,
             ]
             # Use the client's create_agent method (returns a ChatAgent, not a context manager)
             agent = client.create_agent(

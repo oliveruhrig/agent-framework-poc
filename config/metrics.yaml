@@ -29,3 +29,24 @@ metrics:
     owner: Finance Transformation
     min_aggregation_size: 25
     freshness_days: 14
+  premium_request_cost:
+    name: Premium Request Net Cost
+    definition: |
+      Billable cost for GitHub Copilot premium model requests after applying the 300 free requests per account per month quota.
+    owner: Finance Transformation
+    min_aggregation_size: 5
+    freshness_days: 1
+  premium_request_volume:
+    name: Premium Request Volume
+    definition: |
+      Total number of premium model requests made by engineers across both GitHub enterprises (manulife EMU and manulife-financial legacy).
+    owner: Office of the CTO
+    min_aggregation_size: 5
+    freshness_days: 1
+  premium_request_users:
+    name: Premium Request Unique Users
+    definition: |
+      Count of unique engineers (by Entra ID) who made at least one premium request during the period.
+    owner: Office of the CTO
+    min_aggregation_size: 5
+    freshness_days: 1
