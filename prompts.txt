@@ -1,3 +1,4 @@
+Build the app:
 I want to build a conversational AI agent using "microsoft agent framework" and python. The agent will be used by management within my company to ask about GitHub copilot usage of the company's 6000 developers. The agent should analyse historic github copilot data I've obtained from github APIs and saved to CSV files. 
 
 The data includes which developers have used github copilot each month, along with number of requests and which models are being used. 
@@ -5,4 +6,54 @@ The data includes which developers have used github copilot each month, along wi
 There are multiple CSV files. For example, there's a CSV file that shows which developers have used github copilot each month, and identifies the segment of each developer. Another CSV shows the number of requests and lines of code suggested and accepted for each request or chat made.
 
 Show the architecture for a solution I can implement using the microsoft agent framework. Should I also create an MCP server as part of the solution?
+
+sample usage:
+
+2025-11-13:
+data: only adoption data
+Management: how has adoption of the gwam segment changed over time?
+[2025-11-13 17:13:28 - /Users/oliveruhrig/Library/CloudStorage/OneDrive-Personal/github/agent-framework-poc/.venv/lib/python3.14/site-packages/agent_framework/_clients.py:567 - WARNING] When conversation_id is set, store must be True for service-managed threads. Automatically setting store=True.
+[2025-11-13 17:13:31 - /Users/oliveruhrig/Library/CloudStorage/OneDrive-Personal/github/agent-framework-poc/.venv/lib/python3.14/site-packages/agent_framework/_clients.py:567 - WARNING] When conversation_id is set, store must be True for service-managed threads. Automatically setting store=True.
+Analytics: Short answer
+- FTE adoption in gwam has risen overall from 50.1% (2024-11) to 73.2% (2025-10) — an increase of 23.1 percentage points (≈+46% relative).
+- Non‑FTE (contractor) adoption is only available from 2025-04 onward; it fell from 84.2% (2025-04) to 63.7% (2025-10) — a decline of 20.5 percentage points (≈−24% relative).
+- Non‑FTE data is missing for 2024-11 → 2025-03.
+
+Details and notable changes
+- FTE adoption (monthly values):
+  - 2024-11: 50.1%
+  - 2024-12: 47.6% (small dip)
+  - 2025-01: 74.3% (large jump of +26.7 pp vs Dec)
+  - 2025-02: 74.3% (stable)
+  - 2025-03: 80.1% (up)
+  - 2025-04: 80.5%
+  - 2025-05: 82.7% (peak)
+  - 2025-06: 60.2% (sharp drop of −22.5 pp vs May)
+  - 2025-07: 68.2% (partial recovery)
+  - 2025-08: 71.5%
+  - 2025-09: 66.9%
+  - 2025-10: 73.2% (most recent)
+  - Net change Nov 2024 → Oct 2025: +23.1 pp.
+
+- Non‑FTE adoption (monthly values; no data before 2025-04):
+  - 2025-04: 84.2% (first available)
+  - 2025-05: 81.1%
+  - 2025-06: 82.7%
+  - 2025-07: 52.7% (large drop of −30.0 pp vs Jun)
+  - 2025-08: 62.4%
+  - 2025-09: 65.7%
+  - 2025-10: 63.7% (most recent)
+  - Net change Apr 2025 → Oct 2025: −20.5 pp.
+
+FTE vs contractor comparison (months with both values)
+- Apr–May 2025: non‑FTE slightly higher or comparable (Apr: 84.2% vs FTE 80.5%; May: 81.1% vs FTE 82.7%).
+- Jun 2025: contractors much higher (non‑FTE 82.7% vs FTE 60.2%).
+- Jul 2025: FTE higher (68.2% vs non‑FTE 52.7%).
+- Aug–Oct 2025: both converge in the mid‑60s/low‑70s (e.g., Oct: FTE 73.2% vs non‑FTE 63.7%).
+
+Interpretation and next steps
+- Adoption rose substantially for FTEs (notably a large jump in Jan 2025) and peaked in May 2025 before a sharp June decline and subsequent recovery.
+- Contractor adoption started high (Apr 2025) but shows greater volatility, including a pronounced drop in Jul 2025.
+- Missing non‑FTE data before 2025-04 limits full historical comparison.
+- Recommended investigations: check what changed around Jan 2025 (FTE jump) and Jun–Jul 2025 (sharp drops and volatility), verify counts of eligible users vs active users, and confirm any policy/rollout events that could explain the swings.
 

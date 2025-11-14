@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 import re
 from typing import Annotated, Optional, List
@@ -136,25 +134,45 @@ async def run_console_agent(mcp_url: str = "http://127.0.0.1:8000") -> None:
     global _BRIDGE
     _BRIDGE = McpBridge(base_url=mcp_url)
 
+    # Load environment variables to get AZURE_AI_PROJECT_ENDPOINT and AZURE_AI_MODEL_DEPLOYMENT_NAME
+    from pathlib import Path
+    from dotenv import load_dotenv
+    import os
+    
+    # Find and load .env file
+    start_dir = Path(__file__).resolve().parent
+    for directory in [start_dir, *start_dir.parents]:
+        env_file = directory / ".env"
+        if env_file.exists():
+            load_dotenv(env_file)
+            break
+    
+    # Verify required environment variables
+    if "AZURE_AI_PROJECT_ENDPOINT" not in os.environ:
+        raise RuntimeError("AZURE_AI_PROJECT_ENDPOINT is missing from environment")
+
     async with AzureCliCredential() as credential:
-        client = AzureAIAgentClient(async_credential=credential)
-        analytics_instructions = (
-            "You are the Copilot Usage Analytics agent. Use the registered MCP tools to ground all"
-            " answers. Summaries must reference quantitative metrics, compare FTE and contractor"
-            " adoption when relevant, and state when data is missing."
-        )
-        tools = [
-            list_segments_tool,
-            segment_adoption_summary_tool,
-            segment_adoption_trend_tool,
-            segment_adoption_leaders_tool,
-            describe_metrics_tool,
-        ]
-        async with client.create_agent(
-            name="CopilotUsageOrchestrator",
-            instructions=analytics_instructions,
-            tools=tools,
-        ) as agent:
+        # Create the AzureAIAgentClient directly - it will create the AgentsClient internally
+        async with AzureAIAgentClient(async_credential=credential) as client:
+            analytics_instructions = (
+                "You are the Copilot Usage Analytics agent. Use the registered MCP tools to ground all"
+                " answers. Summaries must reference quantitative metrics, compare FTE and contractor"
+                " adoption when relevant, and state when data is missing."
+            )
+            tools = [
+                list_segments_tool,
+                segment_adoption_summary_tool,
+                segment_adoption_trend_tool,
+                segment_adoption_leaders_tool,
+                describe_metrics_tool,
+            ]
+            # Use the client's create_agent method (returns a ChatAgent, not a context manager)
+            agent = client.create_agent(
+                name="CopilotUsageOrchestrator",
+                instructions=analytics_instructions,
+                tools=tools,
+            )
+            
             print("Copilot Usage Orchestrator online. Type 'exit' to quit.\n")
             while True:
                 user_query = input("Management: ").strip()
@@ -167,7 +185,7 @@ async def run_console_agent(mcp_url: str = "http://127.0.0.1:8000") -> None:
                 if guard_message:
                     print(f"Governance: {guard_message}\n")
                     continue
-                response = await agent.run(user_query)
+                response = await agent.run(user_query, store=True)
                 print(f"Analytics: {response}\n")
 
 
